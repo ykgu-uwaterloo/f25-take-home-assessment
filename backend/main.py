@@ -24,11 +24,6 @@ class WeatherRequest(BaseModel):
 
 class WeatherResponse(BaseModel):
     id: str
-    date: str
-    location: str
-    notes: str
-    weather_data: Dict[str, Any]
-    created_at: str
 
 @app.post("/weather", response_model=WeatherResponse)
 async def create_weather_request(request: WeatherRequest):
