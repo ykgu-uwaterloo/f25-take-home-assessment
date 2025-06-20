@@ -34,10 +34,27 @@ cd f25-take-home-assessment
 
 ### 2. Backend Setup
 
+First, create and activate a Python virtual environment to keep dependencies isolated:
+
+**On macOS/Linux:**
+
 ```bash
 cd backend
+python3 -m venv venv
+source venv/bin/activate
 pip install -r requirements.txt
 ```
+
+**On Windows:**
+
+```bash
+cd backend
+python -m venv venv
+venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+**Note:** You'll need to activate the virtual environment each time you work on the backend
 
 ### 3. Frontend Setup
 
@@ -148,26 +165,6 @@ Frontend will run on http://localhost:3000
 1. Use the sample ID printed in the backend console when starting the server
 2. Enter it in your lookup interface
 3. You should see the sample weather data displayed
-
-## Sample Data Structure
-
-The GET endpoint returns data in this format:
-
-```json
-{
-  "id": "abc-123-def",
-  "date": "2024-01-15",
-  "location": "New York",
-  "notes": "Sample weather data",
-  "weather_data": {
-    "temperature": 22,
-    "description": "Partly cloudy",
-    "humidity": 65,
-    "wind_speed": 10
-  },
-  "created_at": "2024-01-15T10:30:00"
-}
-```
 
 ## Success Criteria
 
