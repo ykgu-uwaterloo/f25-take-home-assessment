@@ -20,10 +20,16 @@ import {
 } from "@/components/ui/popover";
 import { Textarea } from "./ui/textarea";
 
+import { CheckCircle, Loader2 } from "lucide-react";
+
 interface WeatherFormData {
   date: string;
   location: string;
   notes: string;
+}
+
+interface WeatherFormProps {
+  onNewId: (id: string) => void;
 }
 
 function formatDateForDisplay(date: Date | undefined): string {
@@ -44,16 +50,17 @@ function isValidDate(date: Date | undefined): boolean {
   return date instanceof Date && !isNaN(date.getTime());
 }
 
-export function WeatherForm() {
+export function WeatherForm({ onNewId }: WeatherFormProps) {
+  const [copied, setCopied] = useState(false);
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(
-    new Date(),
+    new Date()
   );
   const [calendarMonth, setCalendarMonth] = useState<Date | undefined>(
-    new Date(),
+    new Date()
   );
   const [displayValue, setDisplayValue] = useState(
-    formatDateForDisplay(new Date()),
+    formatDateForDisplay(new Date())
   );
 
   const [formData, setFormData] = useState<WeatherFormData>({
@@ -80,7 +87,7 @@ export function WeatherForm() {
   };
 
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -117,7 +124,6 @@ export function WeatherForm() {
         },
         body: JSON.stringify(formData),
       });
-
       if (response.ok) {
         const data = await response.json();
         setResult({
@@ -125,6 +131,7 @@ export function WeatherForm() {
           message: "Weather request submitted successfully!",
           id: data.id,
         });
+        onNewId(data.id);
         // Reset form after successful submission
         const today = new Date();
         setSelectedDate(today);
@@ -235,8 +242,15 @@ export function WeatherForm() {
             />
           </div>
 
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? "Submitting..." : "Submit Weather Request"}
+          <Button type="submit" disabled={isSubmitting} className="w-full">
+            {isSubmitting ? (
+              <div className="flex items-center gap-2">
+                <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                <span>Submitting...</span>
+              </div>
+            ) : (
+              "Submit Weather Request"
+            )}
           </Button>
 
           {result && (
@@ -247,14 +261,46 @@ export function WeatherForm() {
                   : "bg-red-900/20 text-red-500 border border-red-500"
               }`}
             >
-              <p className="text-sm font-medium">{result.message}</p>
+              <div className="flex items-center gap-2 text-green-400">
+                <CheckCircle className="w-4 h-4" />
+                <span>{result.message}</span>
+              </div>
               {result.success && result.id && (
-                <p className="text-xs mt-1">
-                  Your weather request ID:{" "}
-                  <code className="bg-green-500/20 text-green-400 px-1 rounded">
-                    {result.id}
-                  </code>
-                </p>
+                <>
+                  <p className="text-xs mt-1">Your weather request ID:</p>
+
+                  <div className="relative mt-1 flex items-center gap-2">
+                    <div
+                      className="flex-1 px-3 py-2 rounded-md text-sm text-green-400 font-mono cursor-pointer transition bg-muted hover:bg-green-900 border border-green-700"
+                      onClick={() => {
+                        navigator.clipboard.writeText(result.id!);
+                        setCopied(true);
+                        setTimeout(() => setCopied(false), 2000);
+                      }}
+                      title="Click to copy"
+                    >
+                      {result.id}
+                    </div>
+
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(result.id!);
+                        setCopied(true);
+                        setTimeout(() => setCopied(false), 2000);
+                      }}
+                      title="Copy"
+                      className="px-2 py-1 rounded-md bg-green-700 hover:bg-green-600 text-white text-xs transition"
+                    >
+                      Copy
+                    </button>
+
+                    {copied && (
+                      <div className="absolute -top-7 left-0 text-xs text-white bg-green-600 px-2 py-1 rounded shadow">
+                        Copied!
+                      </div>
+                    )}
+                  </div>
+                </>
               )}
             </div>
           )}

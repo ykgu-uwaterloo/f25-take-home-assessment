@@ -1,7 +1,12 @@
+"use client";
+
+import { useState } from "react";
 import { WeatherForm } from "@/components/weather-form";
 import WeatherLookup from "@/components/weather-lookup";
 
 export default function Home() {
+  const [weatherId, setWeatherId] = useState("");
+
   return (
     <div className="min-h-screen bg-background p-8">
       <div className="max-w-4xl mx-auto">
@@ -20,13 +25,13 @@ export default function Home() {
             <h2 className="text-2xl font-semibold mb-4">
               Submit Weather Request
             </h2>
-            <WeatherForm />
+            <WeatherForm onNewId={setWeatherId} />
           </div>
 
-          {/* Data Lookup Section Placeholder */}
+          {/* Data Lookup Section */}
           <div className="flex flex-col items-center justify-start">
             <h2 className="text-2xl font-semibold mb-4">Lookup Weather Data</h2>
-            <WeatherLookup />
+            <WeatherLookup weatherId={weatherId} />{" "}
           </div>
         </div>
       </div>
