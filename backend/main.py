@@ -59,6 +59,17 @@ async def create_weather_request(request: WeatherRequest):
         "query": request.location,
     }
 
+    # My current weatherstack free API key is limited to current weather data.
+    # If you want to use historical data, you can change the URL and params as follows
+    '''
+    WEATHERSTACK_URL = "http://api.weatherstack.com/historical"
+    params = {
+        "access_key": WEATHERSTACK_API_KEY,
+        "query": request.location,
+        "historical_date": request.date,
+    }
+    '''
+
     # Make the API call to WeatherStack
     response = requests.get(url =  WEATHERSTACK_URL, params=params)
 
