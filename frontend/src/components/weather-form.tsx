@@ -11,7 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, CheckCircle, Loader2 } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
@@ -19,8 +19,6 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Textarea } from "./ui/textarea";
-
-import { CheckCircle, Loader2 } from "lucide-react";
 
 interface WeatherFormData {
   date: string;
@@ -46,12 +44,32 @@ function formatDateForAPI(date: Date | undefined): string {
   return date.toISOString().split("T")[0];
 }
 
-function isValidDate(date: Date | undefined): boolean {
-  return date instanceof Date && !isNaN(date.getTime());
+function isValidDate(
+  date: Date | undefined,
+  rawInput?: string
+): "valid" | "invalid" | "future" {
+  if (!date || isNaN(date.getTime())) return "invalid";
+
+  if (rawInput) {
+    const cleanInput = rawInput.trim().replace(/\s+/g, " ");
+
+    // Strict MM/DD/YYYY or Month Day, Year like formats
+    const dateRegex =
+      /^(?:(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+\d{1,2},?\s+\d{4})$/i;
+    if (!dateRegex.test(cleanInput)) return "invalid";
+  }
+
+  const now = new Date();
+  if (date > now) return "future";
+
+  return "valid";
 }
 
 export function WeatherForm({ onNewId }: WeatherFormProps) {
   const [copied, setCopied] = useState(false);
+  const [errors, setErrors] = useState<{ date?: string; location?: string }>(
+    {}
+  );
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(
     new Date()
@@ -76,13 +94,30 @@ export function WeatherForm({ onNewId }: WeatherFormProps) {
     id?: string;
   } | null>(null);
 
+  function isFormValid() {
+    return (
+      isValidDate(selectedDate, displayValue) &&
+      !errors.date &&
+      !errors.location
+    );
+  }
+
   const handleDateChange = (date: Date | undefined) => {
     setSelectedDate(date);
     setDisplayValue(formatDateForDisplay(date));
-    setFormData((prev) => ({
-      ...prev,
-      date: formatDateForAPI(date),
-    }));
+    const status = isValidDate(date);
+    if (status === "invalid") {
+      setErrors((prev) => ({ ...prev, date: "Please select a valid date." }));
+    } else if (status === "future") {
+      setErrors((prev) => ({ ...prev, date: "Date cannot be in the future." }));
+    } else {
+      setErrors((prev) => ({ ...prev, date: "" }));
+      setFormData((prev) => ({
+        ...prev,
+        date: formatDateForAPI(date),
+      }));
+    }
+
     setCalendarOpen(false);
   };
 
@@ -94,6 +129,15 @@ export function WeatherForm({ onNewId }: WeatherFormProps) {
       ...prev,
       [name]: value,
     }));
+    if (name === "location") {
+      const valid = /^[a-zA-Z\s,.'-]+$/.test(value.trim());
+      setErrors((prev) => ({
+        ...prev,
+        location: valid
+          ? ""
+          : "Enter a valid city name (no symbols or numbers).",
+      }));
+    }
   };
 
   const handleDateInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -101,13 +145,20 @@ export function WeatherForm({ onNewId }: WeatherFormProps) {
     setDisplayValue(inputValue);
 
     const parsedDate = new Date(inputValue);
-    if (isValidDate(parsedDate)) {
+    const status = isValidDate(parsedDate, inputValue);
+
+    if (status === "invalid") {
+      setErrors((prev) => ({ ...prev, date: "Enter a valid calendar date." }));
+    } else if (status === "future") {
+      setErrors((prev) => ({ ...prev, date: "Date cannot be in the future." }));
+    } else {
       setSelectedDate(parsedDate);
       setCalendarMonth(parsedDate);
       setFormData((prev) => ({
         ...prev,
         date: formatDateForAPI(parsedDate),
       }));
+      setErrors((prev) => ({ ...prev, date: "" }));
     }
   };
 
@@ -115,6 +166,11 @@ export function WeatherForm({ onNewId }: WeatherFormProps) {
     e.preventDefault();
     setIsSubmitting(true);
     setResult(null);
+
+    if (!isFormValid()) {
+      setIsSubmitting(false);
+      return;
+    }
 
     try {
       const response = await fetch("http://localhost:8000/weather", {
@@ -177,7 +233,9 @@ export function WeatherForm({ onNewId }: WeatherFormProps) {
                 id="date"
                 value={displayValue}
                 placeholder="Select a date"
-                className="bg-background pr-10"
+                className={`bg-background pr-10 ${
+                  errors.date ? "border-red-500" : ""
+                }`}
                 onChange={handleDateInputChange}
                 onKeyDown={(e) => {
                   if (e.key === "ArrowDown") {
@@ -215,6 +273,9 @@ export function WeatherForm({ onNewId }: WeatherFormProps) {
                 </PopoverContent>
               </Popover>
             </div>
+            {errors.date && (
+              <p className="text-sm text-red-500 px-1">{errors.date}</p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -226,6 +287,7 @@ export function WeatherForm({ onNewId }: WeatherFormProps) {
               placeholder="e.g., New York, London, Tokyo"
               value={formData.location}
               onChange={handleInputChange}
+              className={errors.location ? "border-red-500" : ""}
               required
             />
           </div>
@@ -240,9 +302,16 @@ export function WeatherForm({ onNewId }: WeatherFormProps) {
               value={formData.notes}
               onChange={handleInputChange}
             />
+            {errors.location && (
+              <p className="text-sm text-red-500 px-1">{errors.location}</p>
+            )}
           </div>
 
-          <Button type="submit" disabled={isSubmitting} className="w-full">
+          <Button
+            type="submit"
+            disabled={isSubmitting || !isFormValid()}
+            className="w-full"
+          >
             {isSubmitting ? (
               <div className="flex items-center gap-2">
                 <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />

@@ -1,10 +1,12 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 from typing import Dict, Any, Optional
 import uvicorn
 import requests
 import uuid
+from datetime import date
+import re
 
 app = FastAPI(title="Weather Data System", version="1.0.0")
 
@@ -20,9 +22,21 @@ app.add_middleware(
 weather_storage: Dict[str, Dict[str, Any]] = {}
 
 class WeatherRequest(BaseModel):
-    date: str
+    date: date
     location: str
     notes: Optional[str] = ""
+    
+    @validator("date")
+    def date_must_not_be_in_future(cls, v):
+        if v > date.today():
+            raise ValueError("Date cannot be in the future.")
+        return v
+
+    @validator("location")
+    def location_must_be_valid(cls, v):
+        if not re.match(r"^[a-zA-Z\s,.'-]+$", v.strip()):
+            raise ValueError("Enter a valid city name (no symbols or numbers).")
+        return v
 
 class WeatherResponse(BaseModel):
     id: str
