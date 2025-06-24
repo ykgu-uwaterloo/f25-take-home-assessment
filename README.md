@@ -1,186 +1,27 @@
-# Lynkr Technical Assessment
+### 1. Completed implementation of basic Frontend and Backend usage
 
-## Overview
+### 2. Added more info onto the result of the lookup tab:
 
-Build a weather data system where users can submit weather requests and retrieve stored results by ID.
+1. Now only shows most important info(interpreted for everyone normal day use)
+2. Have a show advanced info button for the rest of the info
 
-## Project Structure
+### 3. Made UI/UX changes to the website to make it look better and modern
 
-```
-├── frontend/          # Next.js frontend application
-│   ├── src/
-│   │   ├── app/       # Next.js app router pages
-│   │   └── components/ # React components
-│   └── package.json
-└── backend/           # FastAPI backend application
-    ├── main.py        # Main API application
-    └── requirements.txt
-```
+1. Auto-copy to lookup field on submit Weather ID
+2. Now shows a small weather icon beside the weather description
+3. Added animations to lookup tab to make it smoother
+4. Disable lookup button unless Weather ID is filled
+5. Added a checkmark to make the website be more professional
+6. Added a small loading circle when submitting
+7. Added a click to copy feature that copies Weather ID either when pressing the copy button, or clicking the Weather ID field directly
 
-## Prerequisites
+### 4. Made validation for Frontend and Backend fields
 
-- Node.js 18+ and npm/yarn
-- Python 3.8+
-- WeatherStack API key (free at https://weatherstack.com/)
+1. Now validates Date and Location in real time, before submitting, and shows red border and what is wrong if invalid (Could only preform basic location validation because I do not have an api that can verify all valid locations)
+2. Disable submit button unless both Date and Location is filled and validated.
+3. Changed the Backend date field in weather request to type date to be better validated, as frontend already uses formatForApi() to make sure the date is in correct format
+4. Also added validations for Date and Location in backend
 
-## Setup Instructions
+### 5. One bonus feature
 
-### 1. Clone the Repository
-
-```bash
-git clone <your-forked-repo-url>
-cd f25-take-home-assessment
-```
-
-### 2. Backend Setup
-
-First, create and activate a Python virtual environment to keep dependencies isolated:
-
-**On macOS/Linux:**
-
-```bash
-cd backend
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-```
-
-**On Windows:**
-
-```bash
-cd backend
-python -m venv venv
-venv\Scripts\activate
-pip install -r requirements.txt
-```
-
-**Note:** You'll need to activate the virtual environment each time you work on the backend
-
-### 3. Frontend Setup
-
-```bash
-cd frontend
-npm install
-# or
-yarn install
-```
-
-### 4. Get WeatherStack API Key
-
-1. Create a free account at https://weatherstack.com/
-2. Get your API key from the dashboard
-3. You'll need this for implementing the POST /weather endpoint
-
-## Running the Application
-
-### Start Backend (Terminal 1)
-
-```bash
-cd backend
-python main.py
-```
-
-Backend will run on http://localhost:8000
-
-### Start Frontend (Terminal 2)
-
-```bash
-cd frontend
-npm run dev
-# or
-yarn dev
-```
-
-Frontend will run on http://localhost:3000
-
-## What's Already Implemented
-
-### ✅ Backend Features
-
-- Basic FastAPI application with CORS configured
-- **GET /weather/{id}** endpoint that retrieves stored weather data
-- In-memory storage system
-- Sample data for testing
-- Pydantic models for request/response validation
-
-### ✅ Frontend Features
-
-- **Weather submission form** with date, location, and notes fields
-- Form validation and error handling
-- Responsive design with Tailwind CSS
-- Dark/light theme support
-
-## Your Tasks
-
-### Backend Task: Implement POST /weather endpoint
-
-**What you need to build:**
-
-- Endpoint that receives form data (date, location, notes)
-- Integration with WeatherStack API to fetch weather data
-- Store combined data with unique ID in memory
-- Return the ID to the frontend
-
-**API Endpoint:** `POST /weather`
-
-**Expected Request Body:**
-
-```json
-{
-  "date": "2024-01-15",
-  "location": "New York",
-  "notes": "Optional notes"
-}
-```
-
-**Expected Response:**
-
-```json
-{
-  "id": "unique-weather-id"
-}
-```
-
-### Frontend Task: Build data lookup interface
-
-**What you need to build:**
-
-- Input field for entering weather data ID
-- Button to fetch data from backend
-- Display retrieved weather information in a nice format
-- Error handling for invalid IDs
-
-**Existing Backend Endpoint:** `GET /weather/{id}`
-
-## Testing Your Implementation
-
-### Testing the Backend
-
-1. Submit a weather request through the frontend form
-2. You should receive an ID back
-3. Use that ID to test the GET endpoint: `http://localhost:8000/weather/{id}`
-
-### Testing the Frontend
-
-1. Use the sample ID printed in the backend console when starting the server
-2. Enter it in your lookup interface
-3. You should see the sample weather data displayed
-
-## Success Criteria
-
-- Form submission returns an ID
-- ID can be used to look up and display weather data
-- Basic error handling for invalid forms/IDs
-- Clean, functional code
-
-## Optional Bonus Features
-
-- Better styling and UX improvements
-- Form validation enhancements
-- Additional weather data fields
-- Loading states and better error messages
-- Data persistence improvements
-
-## Submission
-
-Push your completed code to your forked repository and submit the public GitHub URL.
+1. My current free Weatherstack plan only allows for current weather request, so added optional historical parameters in comments.
